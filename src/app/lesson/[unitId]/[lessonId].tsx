@@ -19,6 +19,7 @@ import {
   type Session,
 } from '@/engine/session';
 import { allUnits, isQuestion } from '@/engine/types';
+import { routeId } from '@/lib/route';
 import { useProgress } from '@/store/progress';
 import { palette, radius, space, unitColors } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
@@ -47,8 +48,10 @@ export default function LessonScreen() {
   const { hearts, loseHeart, completeLesson } = useProgress();
 
   const found = useMemo(() => {
-    const unit = allUnits(curriculum).find((u) => u.id === unitId);
-    const lesson = unit?.lessons.find((l) => l.id === lessonId);
+    const uid = routeId(unitId);
+    const lid = routeId(lessonId);
+    const unit = allUnits(curriculum).find((u) => u.id === uid);
+    const lesson = unit?.lessons.find((l) => l.id === lid);
     return unit && lesson ? { unit, lesson } : null;
   }, [unitId, lessonId]);
 

@@ -14,6 +14,7 @@ import { PathNodeButton, type NodeState } from '@/components/PathNodeButton';
 import { Txt } from '@/components/Txt';
 import { curriculum } from '@/content';
 import { counted, LESSON } from '@/engine/arabic';
+import { routeId } from '@/lib/route';
 import { flatten, type Unit } from '@/engine/types';
 import { useProgress } from '@/store/progress';
 import { radius, space, unitColors } from '@/theme/tokens';
@@ -36,7 +37,7 @@ export default function SectionScreen() {
   const { isDone, ready } = useProgress();
 
   const section = useMemo(
-    () => curriculum.sections.find((s) => s.id === sectionId) ?? null,
+    () => curriculum.sections.find((s) => s.id === routeId(sectionId)) ?? null,
     [sectionId],
   );
   // الفتح متسلسل داخل الباب وحده، فكل باب يُبدأ من أوّله مهما كان حال غيره.
