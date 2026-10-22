@@ -41,6 +41,27 @@ import u36 from './units/u36.json';
 import u37 from './units/u37.json';
 import u38 from './units/u38.json';
 import u39 from './units/u39.json';
+import u40 from './units/u40.json';
+import u41 from './units/u41.json';
+import u42 from './units/u42.json';
+import u43 from './units/u43.json';
+import u44 from './units/u44.json';
+import u45 from './units/u45.json';
+import u46 from './units/u46.json';
+import u47 from './units/u47.json';
+import u48 from './units/u48.json';
+import u49 from './units/u49.json';
+import u50 from './units/u50.json';
+import u51 from './units/u51.json';
+import u52 from './units/u52.json';
+import u53 from './units/u53.json';
+import u54 from './units/u54.json';
+import u55 from './units/u55.json';
+import u56 from './units/u56.json';
+import u57 from './units/u57.json';
+import u58 from './units/u58.json';
+import u59 from './units/u59.json';
+import u60 from './units/u60.json';
 
 export const curriculum: Curriculum = {
   meta: {
@@ -94,7 +115,7 @@ export const curriculum: Curriculum = {
     blurb: "البيوع والعقود والنكاح والمواريث والأطعمة والقضاء وسائر أحكام التعامل",
     color: 'orange',
     pages: [269, 440],
-    units: [] as Unit[],
+    units: [u40, u41, u42, u43, u44, u45, u46, u47, u48, u49, u50, u51, u52, u53, u54, u55, u56, u57, u58, u59, u60] as Unit[],
   },
   ] as Section[],
 };
