@@ -211,7 +211,9 @@ function UnitSection({
             key={lesson.id}
             style={[styles.row, { transform: [{ translateX: offset }] }]}
             onLayout={
-              flatIndex === currentIndex
+              // الدرس الأوّل في الباب لا يُقفز إليه: لا شيء فوقه يُتخطَّى،
+              // والقفزُ يدفع ترويسةَ الباب خارج الشاشة بلا فائدة.
+              flatIndex === currentIndex && currentIndex > 0
                 ? (e: LayoutChangeEvent) => onCurrentRow(unit.id, e.nativeEvent.layout.y)
                 : undefined
             }
