@@ -2,6 +2,16 @@
    لتغيير المنهج عدّل ملفات src/content/units/*.json و src/content/sections.json ثم أعد التوليد. */
 
 import type { Curriculum, Section, Unit } from '@/engine/types';
+import u16 from './units/u16.json';
+import u17 from './units/u17.json';
+import u18 from './units/u18.json';
+import u19 from './units/u19.json';
+import u20 from './units/u20.json';
+import u21 from './units/u21.json';
+import u29 from './units/u29.json';
+import u30 from './units/u30.json';
+import u31 from './units/u31.json';
+import u32 from './units/u32.json';
 import u01 from './units/u01.json';
 import u02 from './units/u02.json';
 import u03 from './units/u03.json';
@@ -41,7 +51,7 @@ export const curriculum: Curriculum = {
     blurb: "الإيمان بالله وأسمائه وملائكته وكتبه ورسله واليوم الآخر والقدر",
     color: 'indigo',
     pages: [7, 58],
-    units: [] as Unit[],
+    units: [u16, u17, u18, u19, u20, u21] as Unit[],
   },
   {
     id: 's2',
@@ -59,7 +69,7 @@ export const curriculum: Curriculum = {
     blurb: "الصبر والتوكل والإيثار والعدل والرحمة والحياء والصدق، وذمّ الأخلاق السيئة",
     color: 'pink',
     pages: [115, 146],
-    units: [] as Unit[],
+    units: [u29, u30, u31, u32] as Unit[],
   },
   {
     id: 's4',
