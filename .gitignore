@@ -1,1 +1,19 @@
+# macOS
 .DS_Store
+
+# deps
+node_modules/
+
+# expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# native projects — مُولَّدة بـ `npx expo prebuild`، لا تُلتزم
+/ios
+/android
+
+# أدوات
+.playwright-mcp/
+*.log

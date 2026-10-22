@@ -1,0 +1,51 @@
+{
+  "expo": {
+    "name": "فقه الصلاة",
+    "slug": "fiqh-salah-duo",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "fiqhsalah",
+    "userInterfaceStyle": "automatic",
+    "backgroundColor": "#ffffff",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.omarabdelkader.fiqhsalah"
+    },
+    "android": {
+      "package": "com.omarabdelkader.fiqhsalah",
+      "adaptiveIcon": {
+        "backgroundColor": "#58cc02",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "output": "static",
+      "bundler": "metro",
+      "favicon": "./assets/images/favicon.png",
+      "name": "فقه الصلاة",
+      "lang": "ar",
+      "themeColor": "#58cc02",
+      "backgroundColor": "#ffffff",
+      "display": "standalone"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#58cc02",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 120
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}
