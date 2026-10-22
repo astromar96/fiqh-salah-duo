@@ -59,8 +59,6 @@ export const curriculum: Curriculum = {
 ${sectionLiterals},
   ] as Section[],
 };
-
-export default curriculum;
 `;
 
 writeFileSync(OUT, body);

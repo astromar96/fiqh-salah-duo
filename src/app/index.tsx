@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { shade } from '@/components/Button';
 import { Hud } from '@/components/Hud';
 import { Txt } from '@/components/Txt';
-import curriculum from '@/content';
+import { curriculum } from '@/content';
 import { counted, LESSON, UNIT } from '@/engine/arabic';
 import { allLessons, flatten, type Section } from '@/engine/types';
 import { useProgress } from '@/store/progress';

@@ -88,8 +88,12 @@ const Context = createContext<ProgressApi | null>(null);
 export function ProgressProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<Persisted>(EMPTY);
   const [ready, setReady] = useState(false);
-  // نبضة كل دقيقة تعيد حساب القلوب المستعادة دون انتظار تفاعل.
-  const [tick, setTick] = useState(0);
+  /**
+   * الوقت الحالي في الحالة لا في جسم العرض. قراءة `Date.now()` أثناء العرض
+   * تجعله غير نقي: يختلف ناتجه بين رسمتين بلا تغيّر في الحالة. النبضة
+   * تحدّثه كل نصف دقيقة فتعود القلوب دون انتظار تفاعل من المستخدم.
+   */
+  const [now, setNow] = useState(() => Date.now());
   const loaded = useRef(false);
 
   useEffect(() => {
@@ -118,11 +122,10 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
   }, [state]);
 
   useEffect(() => {
-    const id = setInterval(() => setTick((t) => t + 1), 30_000);
+    const id = setInterval(() => setNow(Date.now()), 30_000);
     return () => clearInterval(id);
   }, []);
 
-  const now = Date.now();
   const hearts = heartsNow(state, now);
   const nextHeartMs = msToNextHeart(state, now);
 
@@ -166,8 +169,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
       completeLesson,
       reset,
     }),
-    // `tick` يدخل عمدًا حتى يُعاد حساب القلوب مع مرور الوقت.
-    [ready, state, hearts, nextHeartMs, loseHeart, completeLesson, reset, tick],
+    [ready, state, hearts, nextHeartMs, loseHeart, completeLesson, reset],
   );
 
   return <Context.Provider value={value}>{children}</Context.Provider>;

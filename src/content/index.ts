@@ -74,5 +74,3 @@ export const curriculum: Curriculum = {
   },
   ] as Section[],
 };
-
-export default curriculum;

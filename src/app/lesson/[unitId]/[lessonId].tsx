@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '@/components/Button';
 import { Txt } from '@/components/Txt';
 import { isAnswerComplete, QuestionView } from '@/components/questions';
-import curriculum from '@/content';
+import { curriculum } from '@/content';
 import { correctAnswerText, grade, type Answer } from '@/engine/grade';
 import {
   advance,
