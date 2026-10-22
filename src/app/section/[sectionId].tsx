@@ -1,6 +1,13 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useMemo } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+  type LayoutChangeEvent,
+  type ScrollViewInstance,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Hud } from '@/components/Hud';
 import { PathNodeButton, type NodeState } from '@/components/PathNodeButton';
@@ -39,6 +46,44 @@ export default function SectionScreen() {
     return i === -1 ? nodes.length : i;
   }, [nodes, isDone]);
 
+  /**
+   * الباب الواحد قد يبلغ مئةً وخمسين درسًا، ففتحُه على أوّله يترك القارئ
+   * يمرّر طويلًا ليبلغ موضعه، فنقفز إلى الدرس المفتوح عند فتح الباب.
+   *
+   * الموضع يأتي من قياسين: موضعُ الوحدة في المحتوى، وموضعُ الصفّ داخلها.
+   * `onLayout` الابنِ يسبق `onLayout` الأبِ، فلا يصحّ جمعُهما عند الابن —
+   * كان الأبُ حينها ما يزال عند الصفر. نجمعهما هنا بعد ورودهما معًا.
+   */
+  const scroller = useRef<ScrollViewInstance>(null);
+  const unitTops = useRef<Record<string, number>>({});
+  const currentRow = useRef<{ unitId: string; y: number } | null>(null);
+  const jumped = useRef(false);
+  const [measured, setMeasured] = useState(0);
+
+  const noteUnitTop = useCallback((unitId: string, y: number) => {
+    unitTops.current[unitId] = y;
+    setMeasured((n) => n + 1);
+  }, []);
+  const noteCurrentRow = useCallback((unitId: string, y: number) => {
+    currentRow.current = { unitId, y };
+    setMeasured((n) => n + 1);
+  }, []);
+
+  useEffect(() => {
+    if (jumped.current) return;
+    const row = currentRow.current;
+    if (!row) return;
+    const top = unitTops.current[row.unitId];
+    if (top === undefined) return;
+    jumped.current = true;
+    // إطارٌ واحد ريثما يستقرّ ارتفاع المحتوى، وإلا قُصَّ الهدف إلى الصفر.
+    const id = requestAnimationFrame(() =>
+      // نترك مساحةً فوقه ليظهر عنوانُ وحدته معه.
+      scroller.current?.scrollTo({ y: Math.max(0, top + row.y - 160), animated: false }),
+    );
+    return () => cancelAnimationFrame(id);
+  }, [measured]);
+
   const back = () => {
     if (router.canGoBack()) router.back();
     else router.replace('/');
@@ -69,6 +114,7 @@ export default function SectionScreen() {
     <View style={[styles.fill, { backgroundColor: theme.bg }]}>
       <Hud />
       <ScrollView
+        ref={scroller}
         contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + space.xxl }]}
         showsVerticalScrollIndicator={false}
       >
@@ -106,6 +152,8 @@ export default function SectionScreen() {
             unitIndex={unitIndex}
             nodes={nodes}
             currentIndex={currentIndex}
+            onUnitTop={noteUnitTop}
+            onCurrentRow={noteCurrentRow}
             onOpen={(unitId, lessonId) => router.push(`/lesson/${unitId}/${lessonId}`)}
           />
         ))}
@@ -119,19 +167,28 @@ function UnitSection({
   unitIndex,
   nodes,
   currentIndex,
+  onUnitTop,
+  onCurrentRow,
   onOpen,
 }: {
   unit: Unit;
   unitIndex: number;
   nodes: ReturnType<typeof flatten>;
   currentIndex: number;
+  /** موضع هذه الوحدة داخل محتوى المسار. */
+  onUnitTop: (unitId: string, y: number) => void;
+  /** موضع صفّ الدرس المفتوح داخل هذه الوحدة. */
+  onCurrentRow: (unitId: string, y: number) => void;
   onOpen: (unitId: string, lessonId: string) => void;
 }) {
   const theme = useTheme();
   const tint = unitColors[unit.color] ?? unitColors.green;
 
   return (
-    <View style={styles.unit}>
+    <View
+      style={styles.unit}
+      onLayout={(e: LayoutChangeEvent) => onUnitTop(unit.id, e.nativeEvent.layout.y)}
+    >
       <View style={[styles.banner, { backgroundColor: tint.base }]}>
         <Txt size="caption" weight="semibold" color="rgba(255,255,255,0.85)">
           الوحدة {unitIndex + 1} · {unit.subtitle}
@@ -150,7 +207,15 @@ function UnitSection({
           flatIndex < currentIndex ? 'done' : flatIndex === currentIndex ? 'current' : 'locked';
         const offset = WEAVE[lessonIndex % WEAVE.length] * WEAVE_PX;
         return (
-          <View key={lesson.id} style={[styles.row, { transform: [{ translateX: offset }] }]}>
+          <View
+            key={lesson.id}
+            style={[styles.row, { transform: [{ translateX: offset }] }]}
+            onLayout={
+              flatIndex === currentIndex
+                ? (e: LayoutChangeEvent) => onCurrentRow(unit.id, e.nativeEvent.layout.y)
+                : undefined
+            }
+          >
             <PathNodeButton
               index={lessonIndex}
               label={lesson.title}
