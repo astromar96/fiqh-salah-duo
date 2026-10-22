@@ -33,6 +33,7 @@ import u11 from './units/u11.json';
 import u12 from './units/u12.json';
 import u13 from './units/u13.json';
 import u14 from './units/u14.json';
+import u61 from './units/u61.json';
 import u15 from './units/u15.json';
 import u33 from './units/u33.json';
 import u34 from './units/u34.json';
@@ -106,7 +107,7 @@ export const curriculum: Curriculum = {
     blurb: "الطهارة والصلاة والجنائز والزكاة والصيام والحج والأضحية",
     color: 'green',
     pages: [147, 267],
-    units: [u01, u02, u03, u04, u05, u06, u07, u08, u09, u10, u11, u12, u13, u14, u15, u33, u34, u35, u36, u37, u38, u39] as Unit[],
+    units: [u01, u02, u03, u04, u05, u06, u07, u08, u09, u10, u11, u12, u13, u14, u61, u15, u33, u34, u35, u36, u37, u38, u39] as Unit[],
   },
   {
     id: 's5',
