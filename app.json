@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "فقه الصلاة",
+    "name": "منهاج المسلم",
     "slug": "fiqh-salah-duo",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -25,7 +25,7 @@
       "output": "static",
       "bundler": "metro",
       "favicon": "./assets/images/favicon.png",
-      "name": "فقه الصلاة",
+      "name": "منهاج المسلم",
       "lang": "ar",
       "themeColor": "#58cc02",
       "backgroundColor": "#ffffff",

@@ -7,19 +7,56 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 const UNITS_DIR = new URL('../src/content/units/', import.meta.url).pathname;
+const SECTIONS_FILE = new URL('../src/content/sections.json', import.meta.url).pathname;
 const COLORS = ['green', 'blue', 'purple', 'orange', 'red', 'teal', 'pink', 'indigo'];
 const TYPES = new Set(['info', 'mcq', 'tf', 'order', 'match', 'fill']);
 
-export function checkUnit(unit, file) {
+export function loadSections() {
+  return JSON.parse(readFileSync(SECTIONS_FILE, 'utf8'));
+}
+
+export function checkSections(sections) {
+  const errs = [];
+  const E = (m) => errs.push(`sections.json: ${m}`);
+  if (!Array.isArray(sections) || sections.length === 0) {
+    E('must be a non-empty array');
+    return errs;
+  }
+  const ids = new Set();
+  sections.forEach((s, i) => {
+    if (!/^s\d$/.test(s.id ?? '')) E(`[${i}] id must match s\\d, got ${JSON.stringify(s.id)}`);
+    if (ids.has(s.id)) E(`[${i}] duplicate id ${s.id}`);
+    ids.add(s.id);
+    for (const k of ['title', 'subtitle', 'blurb']) if (!s[k]) E(`[${i}] missing ${k}`);
+    if (!COLORS.includes(s.color)) E(`[${i}] color must be one of ${COLORS.join('|')}`);
+    if (!Array.isArray(s.pages) || s.pages.length !== 2 || s.pages[0] > s.pages[1]) {
+      E(`[${i}] pages must be [from,to] with from <= to`);
+    }
+  });
+  return errs;
+}
+
+export function checkUnit(unit, file, sections = []) {
   const errs = [];
   const E = (p, m) => errs.push(`${file} ${p}: ${m}`);
 
-  if (!/^u\d{2}$/.test(unit.id ?? '')) E('unit', `id must match u\\d\\d, got ${JSON.stringify(unit.id)}`);
+  if (!/^u\d{2,3}$/.test(unit.id ?? '')) E('unit', `id must match u\\d\\d(\\d)?, got ${JSON.stringify(unit.id)}`);
   if (!unit.title) E('unit', 'missing title');
   if (!unit.subtitle) E('unit', 'missing subtitle');
   if (!COLORS.includes(unit.color)) E('unit', `color must be one of ${COLORS.join('|')}, got ${JSON.stringify(unit.color)}`);
   if (!unit.source?.book) E('unit', 'missing source.book');
   if (!Array.isArray(unit.source?.pages) || unit.source.pages.length !== 2) E('unit', 'source.pages must be [from,to]');
+  else if (unit.source.pages[0] > unit.source.pages[1]) E('unit', 'source.pages must be ascending');
+
+  const section = sections.find((s) => s.id === unit.section);
+  if (!unit.section) E('unit', 'missing section');
+  else if (sections.length && !section) E('unit', `unknown section ${JSON.stringify(unit.section)}`);
+  else if (section && Array.isArray(unit.source?.pages)) {
+    // صفحات الوحدة يجب أن تقع داخل صفحات بابها، وإلا ظهرت الوحدة في الباب الخطأ.
+    const [sa, sb] = section.pages;
+    const [ua, ub] = unit.source.pages;
+    if (ua < sa || ub > sb) E('unit', `pages ${ua}-${ub} outside section ${section.id} (${sa}-${sb})`);
+  }
   if (!Array.isArray(unit.lessons) || unit.lessons.length === 0) {
     E('unit', 'lessons must be a non-empty array');
     return errs;
@@ -99,18 +136,40 @@ export function loadUnits() {
 }
 
 export function checkAll() {
+  const sections = loadSections();
   const loaded = loadUnits();
-  const errs = loaded.flatMap(({ file, unit }) => checkUnit(unit, file));
+  const errs = [
+    ...checkSections(sections),
+    ...loaded.flatMap(({ file, unit }) => checkUnit(unit, file, sections)),
+  ];
   const ids = loaded.map(({ unit }) => unit.id);
   const dupes = ids.filter((id, i) => ids.indexOf(id) !== i);
   if (dupes.length) errs.push(`duplicate unit ids: ${[...new Set(dupes)].join(', ')}`);
-  return { loaded, errs };
+  // وحدتان في نفس الباب لا تتداخل صفحاتهما — تداخلٌ يعني ازدواج المادة.
+  for (const s of sections) {
+    const inSection = loaded
+      .filter(({ unit }) => unit.section === s.id && Array.isArray(unit.source?.pages))
+      .sort((a, b) => a.unit.source.pages[0] - b.unit.source.pages[0]);
+    inSection.forEach(({ unit }, i) => {
+      const next = inSection[i + 1]?.unit;
+      if (next && next.source.pages[0] <= unit.source.pages[1]) {
+        errs.push(`${unit.id} and ${next.id} overlap on pages ${next.source.pages[0]}-${unit.source.pages[1]}`);
+      }
+    });
+  }
+  return { loaded, errs, sections };
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const { loaded, errs } = checkAll();
+  const { loaded, errs, sections } = checkAll();
   const lessons = loaded.reduce((n, { unit }) => n + unit.lessons.length, 0);
   const items = loaded.reduce((n, { unit }) => n + unit.lessons.reduce((m, l) => m + l.items.length, 0), 0);
+  for (const s of sections) {
+    const mine = loaded.filter(({ unit }) => unit.section === s.id);
+    const li = mine.reduce((n, { unit }) => n + unit.lessons.length, 0);
+    const it = mine.reduce((n, { unit }) => n + unit.lessons.reduce((m, l) => m + l.items.length, 0), 0);
+    console.log(`  ${s.id} ${s.title.padEnd(12)} ${String(mine.length).padStart(2)} units · ${String(li).padStart(3)} lessons · ${String(it).padStart(4)} items`);
+  }
   console.log(`${loaded.length} units · ${lessons} lessons · ${items} items`);
   errs.forEach((e) => console.log('ERROR ' + e));
   console.log(errs.length ? `\nFAIL (${errs.length} errors)` : '\nPASS');

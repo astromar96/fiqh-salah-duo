@@ -68,6 +68,7 @@ function Shell() {
         }}
       >
         <Stack.Screen name="index" />
+        <Stack.Screen name="section/[sectionId]" />
         <Stack.Screen name="lesson/[unitId]/[lessonId]" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
       </Stack>
     </View>

@@ -1,35 +1,29 @@
 import { useRouter } from 'expo-router';
-import { useMemo } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { shade } from '@/components/Button';
 import { Hud } from '@/components/Hud';
-import { PathNodeButton, type NodeState } from '@/components/PathNodeButton';
 import { Txt } from '@/components/Txt';
 import curriculum from '@/content';
-import { flatten, type Unit } from '@/engine/types';
+import { counted, LESSON, UNIT } from '@/engine/arabic';
+import { allLessons, flatten, type Section } from '@/engine/types';
 import { useProgress } from '@/store/progress';
-import { radius, space, unitColors } from '@/theme/tokens';
+import { LIP, radius, space, unitColors } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
 
-/** إزاحة أفقية متعرّجة تعطي المسار شكل الأفعى: 0, +1, 0, -1, ... */
-const WEAVE = [0, 1, 0, -1];
-const WEAVE_PX = 56;
-
-export default function PathScreen() {
+export default function HomeScreen() {
   const theme = useTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { isDone, ready, doneCount } = useProgress();
+  const { isDone, ready } = useProgress();
 
-  const nodes = useMemo(() => flatten(curriculum), []);
-  /** أوّل درس غير منجز — هو الدرس المفتوح، وما بعده مُقفل. */
-  const currentIndex = useMemo(() => {
-    const i = nodes.findIndex((n) => !isDone(n.key));
-    return i === -1 ? nodes.length : i;
-  }, [nodes, isDone]);
-
-  const total = nodes.length;
-  const pct = total ? Math.round((doneCount / total) * 100) : 0;
+  const total = useMemo(() => allLessons(curriculum).length, []);
+  const done = useMemo(
+    () => allLessons(curriculum).filter((n) => isDone(n.key)).length,
+    [isDone],
+  );
+  const pct = total ? Math.round((done / total) * 100) : 0;
 
   if (!ready) return <View style={[styles.fill, { backgroundColor: theme.bg }]} />;
 
@@ -45,24 +39,21 @@ export default function PathScreen() {
             {curriculum.meta.title}
           </Txt>
           <Txt size="small" color={theme.inkSoft} center style={styles.introSub}>
-            من كتاب «{curriculum.meta.book}» — {curriculum.meta.author}
+            {curriculum.meta.author} — {curriculum.meta.edition}
           </Txt>
           <View style={[styles.overall, { backgroundColor: theme.surfaceAlt, borderColor: theme.border }]}>
             <View style={[styles.overallFill, { width: `${pct}%` }]} />
             <Txt size="caption" weight="bold" center color={theme.inkSoft} style={styles.overallLabel}>
-              أتممتَ {doneCount} من {total} درسًا
+              أتممتَ {done} من {counted(total, LESSON)}
             </Txt>
           </View>
         </View>
 
-        {curriculum.units.map((unit, unitIndex) => (
-          <UnitSection
-            key={unit.id}
-            unit={unit}
-            unitIndex={unitIndex}
-            nodes={nodes}
-            currentIndex={currentIndex}
-            onOpen={(unitId, lessonId) => router.push(`/lesson/${unitId}/${lessonId}`)}
+        {curriculum.sections.map((section) => (
+          <SectionCard
+            key={section.id}
+            section={section}
+            onPress={() => router.push(`/section/${section.id}`)}
           />
         ))}
 
@@ -74,55 +65,62 @@ export default function PathScreen() {
   );
 }
 
-function UnitSection({
-  unit,
-  unitIndex,
-  nodes,
-  currentIndex,
-  onOpen,
-}: {
-  unit: Unit;
-  unitIndex: number;
-  nodes: ReturnType<typeof flatten>;
-  currentIndex: number;
-  onOpen: (unitId: string, lessonId: string) => void;
-}) {
+/** بطاقة باب — عنوانه ونبذته وتقدّمه. الضغط يفتح مسار دروسه. */
+function SectionCard({ section, onPress }: { section: Section; onPress: () => void }) {
   const theme = useTheme();
-  const tint = unitColors[unit.color] ?? unitColors.green;
+  const { isDone } = useProgress();
+  const [down, setDown] = useState(false);
+
+  const nodes = useMemo(() => flatten(section), [section]);
+  const done = nodes.filter((n) => isDone(n.key)).length;
+  const pct = nodes.length ? Math.round((done / nodes.length) * 100) : 0;
+  const empty = nodes.length === 0;
+
+  const tint = unitColors[section.color] ?? unitColors.green;
+  const fill = empty ? theme.locked : tint.base;
+  const ink = empty ? theme.lockedInk : '#ffffff';
 
   return (
-    <View style={styles.unit}>
-      <View style={[styles.banner, { backgroundColor: tint.base }]}>
-        <Txt size="caption" weight="semibold" color="rgba(255,255,255,0.85)">
-          الوحدة {unitIndex + 1} · {unit.subtitle}
+    <View style={styles.cardWrap}>
+      <View style={[styles.cardLip, { backgroundColor: empty ? theme.borderStrong : shade(fill) }]} />
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${section.subtitle}: ${section.title}`}
+        accessibilityState={{ disabled: empty }}
+        disabled={empty}
+        onPressIn={() => setDown(true)}
+        onPressOut={() => setDown(false)}
+        onPress={onPress}
+        style={[
+          styles.card,
+          { backgroundColor: fill, transform: [{ translateY: down && !empty ? LIP : 0 }] },
+        ]}
+      >
+        <View style={styles.cardHead}>
+          <Txt size="caption" weight="semibold" color={ink} style={styles.dim}>
+            {section.subtitle} · ص {section.pages[0]}–{section.pages[1]}
+          </Txt>
+          <Txt size="caption" weight="bold" color={ink} style={styles.dim}>
+            {empty ? 'قريبًا' : `${pct}%`}
+          </Txt>
+        </View>
+        <Txt weight="black" size="title" color={ink}>
+          {section.title}
         </Txt>
-        <Txt weight="bold" size="lead" color="#ffffff">
-          {unit.title}
+        <Txt size="small" color={ink} style={styles.dim}>
+          {section.blurb}
         </Txt>
-        <Txt size="caption" color="rgba(255,255,255,0.75)">
-          منهاج المسلم، ص {unit.source.pages[0]}–{unit.source.pages[1]}
-        </Txt>
-      </View>
-
-      {unit.lessons.map((lesson, lessonIndex) => {
-        const flatIndex = nodes.findIndex((n) => n.unit.id === unit.id && n.lesson.id === lesson.id);
-        const state: NodeState =
-          flatIndex < currentIndex ? 'done' : flatIndex === currentIndex ? 'current' : 'locked';
-        const offset = WEAVE[lessonIndex % WEAVE.length] * WEAVE_PX;
-        return (
-          <View key={lesson.id} style={[styles.row, { transform: [{ translateX: offset }] }]}>
-            <PathNodeButton
-              index={lessonIndex}
-              label={lesson.title}
-              state={state}
-              tint={tint.base}
-              onPress={() => onOpen(unit.id, lesson.id)}
-            />
-          </View>
-        );
-      })}
-
-      <View style={[styles.divider, { backgroundColor: theme.border }]} />
+        {empty ? null : (
+          <>
+            <View style={styles.bar}>
+              <View style={[styles.barFill, { width: `${pct}%` }]} />
+            </View>
+            <Txt size="caption" color={ink} style={styles.dim}>
+              {counted(section.units.length, UNIT)} · {counted(nodes.length, LESSON)}
+            </Txt>
+          </>
+        )}
+      </Pressable>
     </View>
   );
 }
@@ -130,7 +128,7 @@ function UnitSection({
 const styles = StyleSheet.create({
   fill: { flex: 1 },
   scroll: { paddingHorizontal: space.lg },
-  intro: { paddingTop: space.xl, paddingBottom: space.lg, alignItems: 'center' },
+  intro: { paddingTop: space.xl, paddingBottom: space.sm, alignItems: 'center' },
   introSub: { marginTop: space.xs },
   overall: {
     marginTop: space.lg,
@@ -143,8 +141,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   overallFill: {
-    position: 'absolute',
     // يبدأ الامتلاء من اليمين، موافقةً لاتجاه القراءة.
+    position: 'absolute',
     right: 0,
     top: 0,
     bottom: 0,
@@ -152,18 +150,24 @@ const styles = StyleSheet.create({
     opacity: 0.25,
   },
   overallLabel: { width: '100%' },
-  unit: { alignItems: 'center' },
-  banner: {
+  cardWrap: { width: '100%', maxWidth: 480, alignSelf: 'center', marginTop: space.lg },
+  cardLip: { position: 'absolute', left: 0, right: 0, bottom: 0, height: radius.lg + LIP, borderRadius: radius.lg },
+  card: { borderRadius: radius.lg, padding: space.lg, marginBottom: LIP, alignItems: 'flex-end', gap: 2 },
+  cardHead: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     width: '100%',
-    maxWidth: 480,
-    borderRadius: radius.lg,
-    padding: space.lg,
-    marginTop: space.lg,
-    marginBottom: space.md,
-    alignItems: 'flex-end',
-    gap: 2,
   },
-  row: { marginVertical: space.sm },
-  divider: { height: 1, alignSelf: 'stretch', marginTop: space.lg, opacity: 0.6 },
+  dim: { opacity: 0.85 },
+  bar: {
+    width: '100%',
+    height: 10,
+    borderRadius: radius.pill,
+    backgroundColor: 'rgba(0,0,0,0.18)',
+    overflow: 'hidden',
+    marginTop: space.sm,
+  },
+  barFill: { position: 'absolute', right: 0, top: 0, bottom: 0, backgroundColor: '#ffffff', opacity: 0.9 },
   note: { marginTop: space.xl, paddingHorizontal: space.md },
 });

@@ -37,8 +37,21 @@ export type Unit = {
   title: string;
   subtitle: string;
   color: UnitColor;
+  /** معرّف الباب الذي تنتمي إليه الوحدة — انظر src/content/sections.json. */
+  section: string;
   source: { book: string; pages: [number, number] };
   lessons: Lesson[];
+};
+
+/** باب من أبواب الكتاب الخمسة — المستوى الأعلى في المنهج. */
+export type Section = {
+  id: string;
+  title: string;
+  subtitle: string;
+  blurb: string;
+  color: UnitColor;
+  pages: [number, number];
+  units: Unit[];
 };
 
 export type Curriculum = {
@@ -49,7 +62,7 @@ export type Curriculum = {
     edition: string;
     note: string;
   };
-  units: Unit[];
+  sections: Section[];
 };
 
 /** درس مُسطَّح مع موقعه في المنهج — لترتيب المسار وحساب التقدّم. */
@@ -61,8 +74,9 @@ export type PathNode = {
   lessonIndex: number;
 };
 
-export function flatten(curriculum: Curriculum): PathNode[] {
-  return curriculum.units.flatMap((unit, unitIndex) =>
+/** دروس باب واحد بالترتيب — هذه وحدة الفتح والتقدّم، فكل باب مستقلّ. */
+export function flatten(section: Section): PathNode[] {
+  return section.units.flatMap((unit, unitIndex) =>
     unit.lessons.map((lesson, lessonIndex) => ({
       key: `${unit.id}/${lesson.id}`,
       unit,
@@ -71,4 +85,14 @@ export function flatten(curriculum: Curriculum): PathNode[] {
       lessonIndex,
     })),
   );
+}
+
+/** كل دروس الكتاب — للإجمالي في الشاشة الأولى فقط. */
+export function allLessons(curriculum: Curriculum): PathNode[] {
+  return curriculum.sections.flatMap(flatten);
+}
+
+/** كل وحدات الكتاب مسطَّحة — للبحث عن درس من معرّفه. */
+export function allUnits(curriculum: Curriculum): Unit[] {
+  return curriculum.sections.flatMap((section) => section.units);
 }

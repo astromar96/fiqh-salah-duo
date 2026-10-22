@@ -18,7 +18,7 @@ import {
   startSession,
   type Session,
 } from '@/engine/session';
-import { isQuestion } from '@/engine/types';
+import { allUnits, isQuestion } from '@/engine/types';
 import { useProgress } from '@/store/progress';
 import { palette, radius, space, unitColors } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
@@ -29,7 +29,7 @@ import { useTheme } from '@/theme/useTheme';
  * استضافة ثابتة 404 لرابط مباشر مثل /lesson/u01/u01l1.
  */
 export async function generateStaticParams(): Promise<Record<string, string>[]> {
-  return curriculum.units.flatMap((unit) =>
+  return allUnits(curriculum).flatMap((unit) =>
     unit.lessons.map((lesson) => ({ unitId: unit.id, lessonId: lesson.id })),
   );
 }
@@ -47,7 +47,7 @@ export default function LessonScreen() {
   const { hearts, loseHeart, completeLesson } = useProgress();
 
   const found = useMemo(() => {
-    const unit = curriculum.units.find((u) => u.id === unitId);
+    const unit = allUnits(curriculum).find((u) => u.id === unitId);
     const lesson = unit?.lessons.find((l) => l.id === lessonId);
     return unit && lesson ? { unit, lesson } : null;
   }, [unitId, lessonId]);
