@@ -14,7 +14,10 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches
       .open(CACHE)
-      .then((cache) => cache.addAll([BASE, `${BASE}manifest.json`]))
+      // `reload` يتخطّى مخزن المتصفّح، وإلا خُزّنت نسخةٌ قديمة وقت التنصيب.
+      .then((cache) =>
+        cache.addAll([BASE, `${BASE}manifest.json`].map((u) => new Request(u, { cache: 'reload' }))),
+      )
       // فشل التخزين المسبق لا يمنع التنصيب؛ التخزين وقت الطلب يغطّيه.
       .catch(() => {})
       .then(() => self.skipWaiting()),
@@ -39,7 +42,11 @@ self.addEventListener('fetch', (event) => {
   // صفحة: الشبكة أوّلًا، ثم المخزن، ثم صفحة البداية — كيلا يرى القارئ خطأ المتصفّح.
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request)
+      // `no-store` يتخطّى مخزن المتصفّح. بدونه يردّ المتصفّح من ترويسة
+      // `max-age` (عشر دقائق على GitHub Pages)، فيصل بعد كل نشرٍ مستندٌ
+      // قديم يشير إلى حزمةٍ قديمة — وهي مخزَّنة عندنا ببصمتها فتُقدَّم
+      // فورًا، فيبقى القارئ على النسخة السابقة كاملةً والشبكةُ متاحة.
+      fetch(request.url, { cache: 'no-store', credentials: 'same-origin' })
         .then((res) => {
           const copy = res.clone();
           caches.open(CACHE).then((c) => c.put(request, copy));
