@@ -8,6 +8,13 @@ import u18 from './units/u18.json';
 import u19 from './units/u19.json';
 import u20 from './units/u20.json';
 import u21 from './units/u21.json';
+import u22 from './units/u22.json';
+import u23 from './units/u23.json';
+import u24 from './units/u24.json';
+import u25 from './units/u25.json';
+import u26 from './units/u26.json';
+import u27 from './units/u27.json';
+import u28 from './units/u28.json';
 import u29 from './units/u29.json';
 import u30 from './units/u30.json';
 import u31 from './units/u31.json';
@@ -60,7 +67,7 @@ export const curriculum: Curriculum = {
     blurb: "الأدب مع الله وكلامه ورسوله ومع النفس والخلق، وآداب الحياة اليومية",
     color: 'teal',
     pages: [59, 114],
-    units: [] as Unit[],
+    units: [u22, u23, u24, u25, u26, u27, u28] as Unit[],
   },
   {
     id: 's3',
