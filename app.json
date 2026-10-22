@@ -27,8 +27,8 @@
       "favicon": "./assets/images/favicon.png",
       "name": "منهاج المسلم",
       "lang": "ar",
-      "themeColor": "#58cc02",
-      "backgroundColor": "#ffffff",
+      "themeColor": "#17a673",
+      "backgroundColor": "#fbf9f4",
       "display": "standalone"
     },
     "plugins": [
@@ -45,7 +45,8 @@
     ],
     "experiments": {
       "typedRoutes": true,
-      "reactCompiler": true
+      "reactCompiler": true,
+      "baseUrl": "/fiqh-salah-duo"
     }
   }
 }
