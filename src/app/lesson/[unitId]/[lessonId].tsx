@@ -23,6 +23,17 @@ import { useProgress } from '@/store/progress';
 import { palette, radius, space, unitColors } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
 
+/**
+ * يُصدِّر صفحة ثابتة لكل درس عند `expo export --platform web`.
+ * بدونهَا يُخرَج المسار كملف واحد اسمه `[unitId]/[lessonId].html`، فتُعيد أي
+ * استضافة ثابتة 404 لرابط مباشر مثل /lesson/u01/u01l1.
+ */
+export async function generateStaticParams(): Promise<Record<string, string>[]> {
+  return curriculum.units.flatMap((unit) =>
+    unit.lessons.map((lesson) => ({ unitId: unit.id, lessonId: lesson.id })),
+  );
+}
+
 type Phase =
   | { kind: 'answering' }
   | { kind: 'checked'; correct: boolean }
