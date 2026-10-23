@@ -1,0 +1,19 @@
+{
+  "name": "منهاج المسلم",
+  "short_name": "منهاج المسلم",
+  "description": "تعلّم أبواب كتاب «منهاج المسلم» الخمسة بأسلوب تفاعلي: العقيدة والآداب والأخلاق والعبادات والمعاملات.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#17a673",
+  "background_color": "#fbf9f4",
+  "categories": ["education", "books"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
