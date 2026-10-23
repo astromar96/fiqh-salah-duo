@@ -27,9 +27,17 @@ export const GOOGLE_WEB_CLIENT_ID =
   env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ??
   '1081287525682-vppbb62o551rpts6m179qtudu5aksp9o.apps.googleusercontent.com';
 
-/** معرّفا عميل Google لـ iOS و Android — لا دخول بجوجل على الأجهزة بدونهما. */
-export const GOOGLE_IOS_CLIENT_ID = env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ?? '';
-export const GOOGLE_ANDROID_CLIENT_ID = env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID ?? '';
+/**
+ * معرّفا عميل Google لـ iOS و Android. بدونهما يختفي زرّ جوجل على الأجهزة.
+ * عميل iOS يحتاج كذلك مخطّط العنوان المعكوس في `app.json`، وعميل Android
+ * مربوط ببصمة مفتاح التوقيع، فبصمة التنقيح وحدها مسجّلة الآن.
+ */
+export const GOOGLE_IOS_CLIENT_ID =
+  env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ??
+  '1081287525682-6vktk35qouuvrj26kgf0acbq3bjjhm93.apps.googleusercontent.com';
+export const GOOGLE_ANDROID_CLIENT_ID =
+  env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID ??
+  '1081287525682-sr3oovk6iu02ma9m93iva7k5rna23jpj.apps.googleusercontent.com';
 
 /**
  * `initializeApp` يرفض التكرار، والتحديث الساخن يعيد تنفيذ الوحدة،

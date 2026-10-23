@@ -5,7 +5,10 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "fiqhsalah",
+    "scheme": [
+      "fiqhsalah",
+      "com.googleusercontent.apps.1081287525682-6vktk35qouuvrj26kgf0acbq3bjjhm93"
+    ],
     "userInterfaceStyle": "automatic",
     "backgroundColor": "#ffffff",
     "ios": {
