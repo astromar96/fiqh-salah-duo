@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '@/components/Button';
+import { Glossary, GlossaryNote } from '@/components/Glossary';
 import { Txt } from '@/components/Txt';
 import { isAnswerComplete, QuestionView } from '@/components/questions';
 import { curriculum } from '@/content';
@@ -224,6 +225,8 @@ export default function LessonScreen() {
             />
           </>
         )}
+
+        <Glossary item={item} tint={tint} />
       </ScrollView>
 
       <View
@@ -244,6 +247,7 @@ export default function LessonScreen() {
             <Txt size="small" color={phase.correct ? theme.correctInk : theme.wrongInk}>
               {item.e}
             </Txt>
+            <GlossaryNote item={item} ink={phase.correct ? theme.correctInk : theme.wrongInk} />
             <Txt size="caption" color={phase.correct ? theme.correctInk : theme.wrongInk} style={styles.src}>
               منهاج المسلم، ص {item.src}
             </Txt>

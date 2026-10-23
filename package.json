@@ -14,6 +14,7 @@
     "lint": "expo lint",
     "content:build": "node scripts/build-content.mjs",
     "content:check": "node scripts/check-content.mjs",
+    "glossary:check": "node scripts/check-glossary.mjs",
     "deploy:web": "npm run build:web && node scripts/deploy-pages.mjs"
   },
   "dependencies": {
