@@ -176,6 +176,7 @@ const Context = createContext<ProgressApi | null>(null);
 export function ProgressProvider({ children }: { children: ReactNode }) {
   const { account, ready: authReady } = useAuth();
   const uid = account?.uid ?? null;
+  const guest = !!account?.guest;
 
   const [state, setState] = useState<Persisted>(EMPTY);
   /**
@@ -198,6 +199,8 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
   const suppressRemote = useRef(false);
   /** آخر ما رُفع، كيلا يُعاد رفع ما وصل للتوّ من السحابة. */
   const lastPushed = useRef<string | null>(null);
+  /** معرّف الضيف الخارج، ليُنقل ما لعبه إلى الحساب الذي رقّى نفسه إليه. */
+  const priorGuest = useRef<string | null>(null);
 
   const ready = authReady && loadedUid === uid;
 
@@ -218,9 +221,22 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
         // أوّل دخول بحساب يتبنّى ما لُعب قبله، ثم يُفرَغ المخزن العام كيلا
         // ينتقل التقدّم نفسه إلى حساب آخر يدخل على الجهاز بعده.
         next = isEmpty(pool) ? mine : merge(mine, pool, Date.now());
-        if (!isEmpty(pool)) {
-          await AsyncStorage.multiRemove([localKey(null), LEGACY_KEY]).catch(() => {});
+        const spent = isEmpty(pool) ? [] : [localKey(null), LEGACY_KEY];
+
+        /**
+         * ضيف دخل حسابًا قائمًا: الربط تعذّر لأن الحساب موجود، فبقي تقدّمه
+         * تحت معرّفه هو. ننقله إلى الحساب الذي صار إليه، وفاءً بما تَعِد به
+         * الشاشة. أمّا الترقية بالربط فمعرّفها لا يتغيّر، فلا شيء يُنقل.
+         */
+        const from = priorGuest.current;
+        if (!guest && from && from !== uid) {
+          const played = parse(await read(localKey(from)));
+          if (!isEmpty(played)) next = merge(next, played, Date.now());
+          spent.push(localKey(from));
+          priorGuest.current = null;
         }
+
+        if (spent.length) await AsyncStorage.multiRemove(spent).catch(() => {});
       } else if (!isEmpty(parse(legacy))) {
         await AsyncStorage.removeItem(LEGACY_KEY).catch(() => {});
       }
@@ -235,7 +251,16 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [authReady, uid]);
+  }, [authReady, uid, guest]);
+
+  /**
+   * يُنفَّذ بعد أثر التحميل، فيقرأ ذاك المعرّف السابق قبل أن يُكتب هنا.
+   * والخروج الصريح يُنسيه: جلسة الضيف تُركت قصدًا فلا تُورَّث لمن يدخل بعده.
+   */
+  useEffect(() => {
+    if (guest && uid) priorGuest.current = uid;
+    else if (!uid) priorGuest.current = null;
+  }, [guest, uid]);
 
   useEffect(() => {
     if (!hydrated.current) return;
