@@ -50,6 +50,8 @@ const TAGS = [
   `<meta name="theme-color" content="#17a673"/>`,
   `<meta name="description" content="تعلّم أبواب كتاب «منهاج المسلم» الخمسة: العقيدة والآداب والأخلاق والعبادات والمعاملات."/>`,
   `<link rel="apple-touch-icon" href="${BASE}/icons/apple-touch-icon.png"/>`,
+  // الاسم القياسي أولًا، ونُبقي اسم أبل القديم لإصدارات iOS التي لا تعرف غيره.
+  `<meta name="mobile-web-app-capable" content="yes"/>`,
   `<meta name="apple-mobile-web-app-capable" content="yes"/>`,
   `<meta name="apple-mobile-web-app-title" content="منهاج المسلم"/>`,
 ].join('');
