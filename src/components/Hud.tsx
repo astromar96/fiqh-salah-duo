@@ -1,7 +1,9 @@
-import { StyleSheet, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { palette, radius, space } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
+import { useAuth } from '@/store/auth';
 import { useProgress } from '@/store/progress';
 import { Txt } from './Txt';
 
@@ -33,7 +35,39 @@ export function Hud() {
         tint={palette.ruby}
         hint={hearts < 5 && nextHeartMs !== null ? countdown(nextHeartMs) : undefined}
       />
+      <View style={styles.spacer} />
+      <AccountButton />
     </View>
+  );
+}
+
+/** مدخل الحساب — حرف الاسم إن كان داخلًا، وإلا أيقونة عامّة. */
+function AccountButton() {
+  const theme = useTheme();
+  const router = useRouter();
+  const { account } = useAuth();
+
+  const named = account && !account.guest ? (account.name || account.email || '').trim() : '';
+  const initial = named ? named[0].toUpperCase() : '';
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={account && !account.guest ? 'حسابك' : 'ادخل لحفظ تقدّمك'}
+      hitSlop={8}
+      onPress={() => router.push('/account')}
+      style={[
+        styles.avatar,
+        {
+          backgroundColor: initial ? palette.emerald : theme.surfaceAlt,
+          borderColor: theme.border,
+        },
+      ]}
+    >
+      <Txt size="small" weight="bold" center color={initial ? '#ffffff' : theme.inkSoft}>
+        {initial || '👤'}
+      </Txt>
+    </Pressable>
   );
 }
 
@@ -72,4 +106,14 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
   },
   hint: { marginStart: space.xs, opacity: 0.8 },
+  // يدفع زرّ الحساب إلى الطرف المقابل للإحصاءات.
+  spacer: { flex: 1 },
+  avatar: {
+    width: 32,
+    height: 32,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });

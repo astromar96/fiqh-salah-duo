@@ -13,6 +13,7 @@ import { useEffect } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { AuthProvider } from '@/store/auth';
 import { ProgressProvider } from '@/store/progress';
 import { ThemeProvider, useTheme } from '@/theme/useTheme';
 
@@ -48,9 +49,12 @@ export default function RootLayout() {
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
         <ThemeProvider>
-          <ProgressProvider>
-            <Shell />
-          </ProgressProvider>
+          {/* التقدّم يتبع الحساب، فالمزوّد الخارجي هو مزوّد الدخول. */}
+          <AuthProvider>
+            <ProgressProvider>
+              <Shell />
+            </ProgressProvider>
+          </AuthProvider>
         </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
@@ -70,6 +74,7 @@ function Shell() {
         }}
       >
         <Stack.Screen name="index" />
+        <Stack.Screen name="account" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
         <Stack.Screen name="section/[sectionId]" />
         <Stack.Screen name="lesson/[unitId]/[lessonId]" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
       </Stack>
