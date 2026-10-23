@@ -2,7 +2,7 @@ import * as Haptics from 'expo-haptics';
 import { useState } from 'react';
 import { Platform, Pressable, StyleSheet, View } from 'react-native';
 import { LIP, radius, space } from '@/theme/tokens';
-import { useTheme } from '@/theme/useTheme';
+import { useIsDark, useTheme } from '@/theme/useTheme';
 import { shade } from './Button';
 import { Txt } from './Txt';
 
@@ -18,9 +18,13 @@ type Props = {
 
 const SIZE = 72;
 
+/** الفجوة بين الدائرة وهالة الدرس الحالي. */
+const HALO_GAP = 6;
+
 /** دائرة درس على المسار. الحالة تحدّد اللون والرمز وإمكان الضغط. */
 export function PathNodeButton({ index, label, state, tint, onPress }: Props) {
   const theme = useTheme();
+  const dark = useIsDark();
   const [down, setDown] = useState(false);
   const locked = state === 'locked';
 
@@ -31,7 +35,10 @@ export function PathNodeButton({ index, label, state, tint, onPress }: Props) {
   return (
     <View style={styles.cell}>
       <View style={styles.circleWrap}>
-        {state === 'current' ? <View style={[styles.halo, { borderColor: tint }]} /> : null}
+        {state === 'current' ? (
+          // على الداكن تذوب الهالة الشفيفة في الخلفية وتبدو لطخة رمادية، فنزيد كثافتها.
+          <View style={[styles.halo, { borderColor: tint, opacity: dark ? 0.6 : 0.35 }]} />
+        ) : null}
         <View style={[styles.lip, { backgroundColor: locked ? theme.borderStrong : shade(tint) }]} />
         <Pressable
           accessibilityRole="button"
@@ -73,13 +80,14 @@ const styles = StyleSheet.create({
   circleWrap: { width: SIZE, height: SIZE + LIP, justifyContent: 'center' },
   halo: {
     position: 'absolute',
-    top: -6,
-    left: -6,
-    right: -6,
-    bottom: -6 + LIP,
+    // الدائرة متوسّطة في صندوق أطول منها بمقدار LIP، فتُزاح الهالة بنصفه
+    // رأسيًّا كي تبقى متّحدة المركز معها بدل أن تعلو عنها.
+    top: LIP / 2 - HALO_GAP,
+    bottom: LIP / 2 - HALO_GAP,
+    left: -HALO_GAP,
+    right: -HALO_GAP,
     borderRadius: radius.pill,
     borderWidth: 3,
-    opacity: 0.35,
   },
   lip: {
     position: 'absolute',
