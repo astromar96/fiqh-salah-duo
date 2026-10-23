@@ -14,7 +14,7 @@ import { Platform, StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ProgressProvider } from '@/store/progress';
-import { useTheme } from '@/theme/useTheme';
+import { ThemeProvider, useTheme } from '@/theme/useTheme';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -47,9 +47,11 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
-        <ProgressProvider>
-          <Shell />
-        </ProgressProvider>
+        <ThemeProvider>
+          <ProgressProvider>
+            <Shell />
+          </ProgressProvider>
+        </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
