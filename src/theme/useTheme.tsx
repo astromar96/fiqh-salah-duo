@@ -15,6 +15,10 @@ const HydratedContext = createContext(Platform.OS !== 'web');
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [hydrated, setHydrated] = useState(Platform.OS !== 'web');
+  // القاعدة تمنع ضبط الحالة في جسم الأثر لأنه يُعيد الرسم. وهو المقصود هنا:
+  // «تمّ الإرواء» حدثٌ لا يُعرف إلا بتنفيذ أوّل أثر، فلا سبيل إلى اشتقاقه من
+  // الخصائص. والرسمة الزائدة واحدة عند الإقلاع على الويب وحده.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setHydrated(true), []);
   return <HydratedContext.Provider value={hydrated}>{children}</HydratedContext.Provider>;
 }
